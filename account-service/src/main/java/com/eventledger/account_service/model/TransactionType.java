@@ -1,4 +1,6 @@
 package com.eventledger.account_service.model;
 
-public class TransactionType {
+public enum TransactionType {
+    CREDIT,
+    DEBIT
 }
