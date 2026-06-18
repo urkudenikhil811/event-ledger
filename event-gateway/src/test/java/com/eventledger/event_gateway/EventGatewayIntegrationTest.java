@@ -1,5 +1,6 @@
 package com.eventledger.event_gateway;
 
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import com.eventledger.event_gateway.client.AccountServiceClient;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,5 +46,33 @@ class EventGatewayIntegrationTest {
                 .andExpect(jsonPath("$.eventId").value("evt-int-1"));
 
         verify(accountServiceClient, times(1)).applyTransaction(any());
+    }
+    @Test
+    void traceId_isGeneratedAndReturnedInResponseHeader() throws Exception {
+        String event = """
+            {"eventId":"evt-trace-test","accountId":"acct-trace","type":"CREDIT","amount":10.00,"currency":"USD","eventTimestamp":"2026-05-15T09:00:00Z"}
+            """;
+
+        // no X-Trace-Id sent -> Gateway should generate one and return it
+        mockMvc.perform(post("/events")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(event))
+                .andExpect(status().isCreated())
+                .andExpect(header().exists("X-Trace-Id"));
+    }
+
+    @Test
+    void traceId_isEchoedBackWhenProvided() throws Exception {
+        String event = """
+            {"eventId":"evt-trace-test-2","accountId":"acct-trace","type":"CREDIT","amount":10.00,"currency":"USD","eventTimestamp":"2026-05-15T09:00:00Z"}
+            """;
+
+        // client sends a trace ID -> Gateway must echo it back
+        mockMvc.perform(post("/events")
+                        .header("X-Trace-Id", "my-trace-123")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(event))
+                .andExpect(status().isCreated())
+                .andExpect(header().string("X-Trace-Id", "my-trace-123"));
     }
 }
