@@ -1,0 +1,16 @@
+services:
+  account-service:
+    build: ./account-service
+    image: account-service:1.0
+    ports:
+      - "8080:8080"
+
+  event-gateway:
+    build: ./event-gateway
+    image: event-gateway:1.0
+    ports:
+      - "8081:8081"
+    environment:
+      ACCOUNT-SERVICE_BASE-URL: "http://account-service:8080"
+    depends_on:
+      - account-service

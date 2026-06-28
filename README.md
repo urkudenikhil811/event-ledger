@@ -126,6 +126,20 @@ Both services expose `/health` (with live database connectivity check) and `/met
 
 ---
 
+## Running with Docker Compose
+
+From the repo root:
+
+    docker compose up -d
+
+This starts both services. The Gateway reaches the Account Service by its
+container name (`http://account-service:8080`), set via the
+`ACCOUNT-SERVICE_BASE-URL` environment variable in `docker-compose.yml`.
+
+Stop everything with:
+
+    docker compose down
+
 ## Bonus Items Considered
 
 - **OpenTelemetry / Jaeger**: manual `X-Trace-Id` propagation used instead; OTel Collector integration would be a natural next step.
